@@ -58,7 +58,8 @@ public class FreeriderApplication {
         // start Spring Container, wait until ready.
         SpringApplication.run(FreeriderApplication.class, args);
         //
-        logger.info("\n(3.) Spring Container exited.");
+        // logger.info("\n(3.) Spring Container exited.");
+        logger.info("\nTomcat waiting for HTTP-requests...");
     }
 
 
@@ -75,7 +76,7 @@ public class FreeriderApplication {
         //
         System.out.println(helloMessage);
         //
-        if(propertyPrintBeanInfo) {     // set value in application.yaml properties file
+        if(propertyPrintBeanInfo) {     // test value from application.yaml properties
             printBeanInfo();
         }
     }
