@@ -16,36 +16,32 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 
 import de.freerider.datamodel.Reservation;
 
-
 public interface ReservationsEPDoc {
 
-    static final String api_group_customers = "Customers endpoint";
-
+    static final String api_group_reservations = "Reservations endpoint";
 
     /**
-     * Return all customers.
+     * Return all reservations.
      * 
-     * - GET /customers
+     * - GET /reservations
      * 
-     * @return iterable with all Customers.
+     * @return iterable with all Reservations.
      */
     @Operation(
-        // group name where this operation appears and defines swagger tag
-        // http://localhost:8080/swagger-ui/index.html#/customers-controller
-        tags = {api_group_customers},
+            // group name where this operation appears and defines swagger tag
+            // http://localhost:8080/swagger-ui/index.html#/customers-controller
+            tags = { api_group_reservations },
 
-        // summary: single-line description in API short-list
-        summary = "Return all customers.",
+            // summary: single-line description in API short-list
+            summary = "Return all reservations.",
 
-        // detailed description inside API
-        description = "Return all customers (no limit, no pagination)."
-    )
-    @ApiResponses(value={
-        @ApiResponse(responseCode="200", description="OK", content=@Content(mediaType="application/json")),
+            // detailed description inside API
+            description = "Return all reservations (no limit, no pagination).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
     })
     //
-    Iterable<Reservation> findAllCustomers();
-
+    Iterable<Reservation> findAllReservations();
 
     /**
      * Return Customer by id.
@@ -56,21 +52,17 @@ public interface ReservationsEPDoc {
      * @return Customer with id.
      * @throws ResponseStatusException 400 bad request, 404 not found.
      */
-    @Operation(
-        tags = {api_group_customers},
-        summary = "Return Customer by id, id must not be negative.",
-        description = "Return Customer if id exists, else return error 404 (not found)."
-        // parameters = {@Parameter(name="id", in=ParameterIn.QUERY, schema=@Schema(implementation=Long.class)) }
+    @Operation(tags = {
+            api_group_reservations }, summary = "Return Reservation by id, id must not be negative.", description = "Return Reservation if id exists, else return error 404 (not found)."
+    // parameters = {@Parameter(name="id", in=ParameterIn.QUERY, schema=@Schema(implementation=Long.class)) }
     )
-    @ApiResponses(value={
-        @ApiResponse(responseCode="200", description="OK", content=@Content(mediaType="application/json")),
-        @ApiResponse(responseCode="400", description="Bad Request"),
-        @ApiResponse(responseCode="404", description="Not Found"),
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "400", description = "Bad Request"),
+            @ApiResponse(responseCode = "404", description = "Not Found"),
     })
     //
-    Reservation findCustomerById(@PathVariable long id);
-
-
+    Reservation findReservationById(@PathVariable long id);
 
     /**
      * Create new Customer in database from JSON data received in Request-Body.
@@ -88,38 +80,21 @@ public interface ReservationsEPDoc {
      * @return ResponseEntity with serialized Customer object and status code.
      * @throws ResponseStatusException 400 bad request, 409 conflict (customer present).
      */
-    @Operation(
-        tags = {api_group_customers},
-        summary = "Create new Customer, Customer id must not exist.",
-        description = "Create new Customer from JSON data received in the Request-Body."
-    )
-    @RequestBody(
-        description = "JSON data from which Customer object to create is deserialized.",
-        required = true,
-        content = @Content(
+    @Operation(tags = {
+            api_group_reservations }, summary = "Create new Reservation, Reservation id must not exist.", description = "Create new Reservation from JSON data received in the Request-Body.")
+    @RequestBody(description = "JSON data from which Reservation object to create is deserialized.", required = true, content = @Content(
             // https://stackoverflow.com/questions/63465763/springdoc-openapi-how-to-add-example-of-post-request
-            schema = @Schema(implementation=Reservation.class),
-            mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = {
-                @ExampleObject(
-                    name = "An example request with the minimum required fields to create.",
-                    value = "min",
-                    summary = "Minimal request"),
-                @ExampleObject(
-                    name = "An example request with all fields provided with example values.",
-                    value = "full",
-                    summary = "Full request")
-            }
-        )
-    )
-    @ApiResponses(value={
-        @ApiResponse(responseCode="201", description="Created"),
-        @ApiResponse(responseCode="400", description="Bad Request"),
-        @ApiResponse(responseCode="409", description="Conflict"),
+            schema = @Schema(implementation = Reservation.class), mediaType = MediaType.APPLICATION_JSON_VALUE, examples = {
+                    @ExampleObject(name = "An example request with the minimum required fields to create.", value = "min", summary = "Minimal request"),
+                    @ExampleObject(name = "An example request with all fields provided with example values.", value = "full", summary = "Full request")
+            }))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Created"),
+            @ApiResponse(responseCode = "400", description = "Bad Request"),
+            @ApiResponse(responseCode = "409", description = "Conflict"),
     })
     //
-    ResponseEntity<Reservation> createCustomer(@RequestBody Map<String, Object> jsonData);
-
+    ResponseEntity<Reservation> createReservation(@RequestBody Map<String, Object> jsonData);
 
     /**
      * Update existing Customer in database from JSON data received in Request-Body.
@@ -134,23 +109,16 @@ public interface ReservationsEPDoc {
      * @return empty ResponseEntity with status code.
      * @throws ResponseStatusException 400 bad request, 404 conflict (not found).
      */
-    @Operation(
-        tags = {api_group_customers},
-        summary = "Create new Customer, Customer id must not exist.",
-        description = "Create new Customer from JSON data received in the Request-Body."
-    )
-    @RequestBody(
-        description = "JSON data from which Customer object to update is deserialized.",
-        required = true
-    )
-    @ApiResponses(value={
-        @ApiResponse(responseCode="202", description="Accepted"),
-        @ApiResponse(responseCode="400", description="Bad Request"),
-        @ApiResponse(responseCode="404", description="Not Found"),
+    @Operation(tags = {
+            api_group_reservations }, summary = "Create new Reservation, Reservation id must not exist.", description = "Create new Reservation from JSON data received in the Request-Body.")
+    @RequestBody(description = "JSON data from which Reservation object to update is deserialized.", required = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Accepted"),
+            @ApiResponse(responseCode = "400", description = "Bad Request"),
+            @ApiResponse(responseCode = "404", description = "Not Found"),
     })
     //
-    ResponseEntity<?> updateCustomer(@RequestBody Map<String, Object> jsonData);
-
+    ResponseEntity<?> updateReservation(@RequestBody Map<String, Object> jsonData);
 
     /**
      * Delete Customer with id from database.
@@ -161,20 +129,18 @@ public interface ReservationsEPDoc {
      * @return empty ResponseEntity with status code.
      * @throws ResponseStatusException 400 bad request, 404 not found, 409 conflict.
      */
-    @Operation(
-        tags = {api_group_customers},
-        summary = "Delete Customer with id from database, id must exist.",
-        description = "Delete Customer with id from database. If id is not found, " +
-            "return error 404 (not found). If Customer cannot be deleted due to " +
-            "foreign key dependencies, return error 409 (conflict)."
-    )
-    @ApiResponses(value={
-        @ApiResponse(responseCode="202", description="Accepted"),
-        @ApiResponse(responseCode="400", description="Bad Request"),
-        @ApiResponse(responseCode="404", description="Not Found"),
-        @ApiResponse(responseCode="409", description="Conflict"),
+    @Operation(tags = {
+            api_group_reservations }, summary = "Delete Reservation with id from database, id must exist.", description = "Delete Reservation with id from database. If id is not found, "
+                    +
+                    "return error 404 (not found). If Reservation cannot be deleted due to " +
+                    "foreign key dependencies, return error 409 (conflict).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Accepted"),
+            @ApiResponse(responseCode = "400", description = "Bad Request"),
+            @ApiResponse(responseCode = "404", description = "Not Found"),
+            @ApiResponse(responseCode = "409", description = "Conflict"),
     })
     //
-    ResponseEntity<?> deleteCustomerById(@PathVariable long id);
+    ResponseEntity<?> deleteReservationById(@PathVariable long id);
 
 }

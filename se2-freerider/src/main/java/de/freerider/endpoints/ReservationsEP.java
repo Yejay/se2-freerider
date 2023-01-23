@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import de.freerider.datamodel.Reservation;
 
-
 /**
  * Spring Controller interface for /customers REST endpoint to access the
  * collection of customer resources maintained in a CustomerRepository.
@@ -44,31 +43,27 @@ import de.freerider.datamodel.Reservation;
  *
  */
 
-@RequestMapping("/v1/customers")
+@RequestMapping("/v1/reservations")
 public interface ReservationsEP extends ReservationsEPDoc {
 
     @GetMapping("")
     @Override
-    Iterable<Reservation> findAllCustomers();
-
+    Iterable<Reservation> findAllReservations();
 
     @GetMapping("/{id}")
     @Override
-    Reservation findCustomerById(@PathVariable long id);
-
+    Reservation findReservationById(@PathVariable long id);
 
     @PostMapping("")
     @Override
-    ResponseEntity<Reservation> createCustomer(@RequestBody Map<String, Object> jsonData);
-
+    ResponseEntity<Reservation> createReservation(@RequestBody Map<String, Object> jsonData);
 
     @PutMapping("")
     @Override
-    ResponseEntity<?> updateCustomer(@RequestBody Map<String, Object> jsonData);
-
+    ResponseEntity<?> updateReservation(@RequestBody Map<String, Object> jsonData);
 
     @DeleteMapping("/{id}")
     @Override
-    ResponseEntity<?> deleteCustomerById(@PathVariable long id);
+    ResponseEntity<?> deleteReservationById(@PathVariable long id);
 
 }

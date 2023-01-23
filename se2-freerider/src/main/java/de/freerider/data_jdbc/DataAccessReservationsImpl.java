@@ -17,10 +17,8 @@ import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.freerider.datamodel.Customer;
 import de.freerider.datamodel.DataFactory;
 import de.freerider.datamodel.Reservation;
-
 
 /**
  * Non-public implementation class or DataAccess interface.
@@ -50,7 +48,6 @@ class DataAccessReservationsImpl implements DataAccessReservations {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-
     /**
      * Run query that returns the number of Customers in the database:
      * - query: SELECT COUNT(ID) FROM CUSTOMER;
@@ -62,23 +59,21 @@ class DataAccessReservationsImpl implements DataAccessReservations {
     public long countReservations() {
         //
         List<Object> result = jdbcTemplate.query(
-            /*
-             * Run SQL statement:
-             */
-            "SELECT COUNT(ID) FROM CUSTOMER",
+                /*
+                 * Run SQL statement:
+                 */
+                "SELECT COUNT(ID) FROM RESERVATION",
 
-            /*
-             * Return ResultSet (rs) and extract COUNT value.
-             */
-            (rs, rowNum) -> {
-                long count = rs.getInt(1);  // index[1]
-                return count;
-            }
-        );
+                /*
+                 * Return ResultSet (rs) and extract COUNT value.
+                 */
+                (rs, rowNum) -> {
+                    long count = rs.getInt(1); // index[1]
+                    return count;
+                });
         //
-        return result.size() > 0? (long)(result.get(0)) : 0;
+        return result.size() > 0 ? (long) (result.get(0)) : 0;
     }
-
 
     /**
      * Run query that returns all Customers in the database.
@@ -91,47 +86,46 @@ class DataAccessReservationsImpl implements DataAccessReservations {
     public Iterable<Reservation> findAllReservations() {
         //
         var result = jdbcTemplate.queryForStream(
-            /*
-             * Run SQL statement:
-             */
-            "SELECT * FROM RESERVATION",
+                /*
+                 * Run SQL statement:
+                 */
+                "SELECT * FROM RESERVATION",
 
-            /*
-             * Return ResultSet (rs) and map each row to Optional<Customer>
-             * depending on whether the object could be created from values
-             * returned from the database or not (empty Optional is returned).
-             */
-            (rs, rowNum) -> {
                 /*
-                 * Extract values from ResultSet for each row.
+                 * Return ResultSet (rs) and map each row to Optional<Customer>
+                 * depending on whether the object could be created from values
+                 * returned from the database or not (empty Optional is returned).
                  */
-                long id = rs.getInt("ID");
-                long customer_id = rs.getInt("CUSTOMER_ID");
-                long vehicle_id = rs.getInt("VEHICLE_ID");
-                String begin = rs.getString("BEGIN");
-                String end = rs.getString("END");
-                String pickup = rs.getString("PICKUP");
-                String dropoff = rs.getString("DROPOFF");
-                String status = rs.getString("STATUS");
+                (rs, rowNum) -> {
+                    /*
+                     * Extract values from ResultSet for each row.
+                     */
+                    long id = rs.getInt("ID");
+                    long customer_id = rs.getInt("CUSTOMER_ID");
+                    long vehicle_id = rs.getInt("VEHICLE_ID");
+                    String begin = rs.getString("BEGIN");
+                    String end = rs.getString("END");
+                    String pickup = rs.getString("PICKUP");
+                    String dropoff = rs.getString("DROPOFF");
+                    String status = rs.getString("STATUS");
+                    /*
+                     * Attempt to create Customer object through dataFactory,
+                     * which returns Optional<Customer>.
+                     */
+                    return dataFactory.createReservation(id, customer_id, vehicle_id, begin, end, pickup, dropoff,
+                            status);
+                })
                 /*
-                 * Attempt to create Customer object through dataFactory,
-                 * which returns Optional<Customer>.
+                 * Remove empty results from stream of Optional<Customer>,
+                 * map remaining from Optional<Customer> to Customer and
+                 * collect result.
                  */
-                return dataFactory.createReservation(id, customer_id, vehicle_id, begin, end, pickup, dropoff, status);
-            }
-        )
-        /*
-         * Remove empty results from stream of Optional<Customer>,
-         * map remaining from Optional<Customer> to Customer and
-         * collect result.
-         */
-        .filter(opt -> opt.isPresent())
-        .map(opt -> opt.get())
-        .collect(Collectors.toList());
+                .filter(opt -> opt.isPresent())
+                .map(opt -> opt.get())
+                .collect(Collectors.toList());
         //
         return result;
     }
-
 
     /**
      * Run query that returns one Customers with a given id.
@@ -145,41 +139,40 @@ class DataAccessReservationsImpl implements DataAccessReservations {
     public Optional<Reservation> findReservationById(long id) {
         //
         List<Optional<Reservation>> result = jdbcTemplate.query(
-            /*
-             * Prepare statement (ps) with "?"-augmented SQL query.
-             */
-            "SELECT * FROM CUSTOMER WHERE ID = ?",
-            ps -> {
                 /*
-                 * Insert id value of first occurence of "?" in SQL.
+                 * Prepare statement (ps) with "?"-augmented SQL query.
                  */
-                ps.setInt(1, (int)id);
-            },
+                "SELECT * FROM RESERVATION WHERE ID = ?",
+                ps -> {
+                    /*
+                     * Insert id value of first occurence of "?" in SQL.
+                     */
+                    ps.setInt(1, (int) id);
+                },
 
-            (rs, rowNum) -> {
-                /*
-                 * Extract values from ResultSet.
-                 */
-                long customer_id = rs.getInt("CUSTOMER_ID");
-                long vehicle_id = rs.getInt("VEHICLE_ID");
-                String begin = rs.getString("BEGIN");
-                String end = rs.getString("END");
-                String pickup = rs.getString("PICKUP");
-                String dropoff = rs.getString("DROPOFF");
-                String status = rs.getString("STATUS");
-                /*
-                 * Create Optional<Customer> from values.
-                 */
-                return dataFactory.createReservation(id, customer_id, vehicle_id, begin, end, pickup, dropoff, status);
-            }
-        );
+                (rs, rowNum) -> {
+                    /*
+                     * Extract values from ResultSet.
+                     */
+                    long customer_id = rs.getInt("CUSTOMER_ID");
+                    long vehicle_id = rs.getInt("VEHICLE_ID");
+                    String begin = rs.getString("BEGIN");
+                    String end = rs.getString("END");
+                    String pickup = rs.getString("PICKUP");
+                    String dropoff = rs.getString("DROPOFF");
+                    String status = rs.getString("STATUS");
+                    /*
+                     * Create Optional<Customer> from values.
+                     */
+                    return dataFactory.createReservation(id, customer_id, vehicle_id, begin, end, pickup, dropoff,
+                            status);
+                });
         /*
          * Probe List<Optional<Customer>> and return Optional<Customer> or
          * empty Optional for empty list.
          */
-        return result.size() > 0? result.get(0) : Optional.empty();
+        return result.size() > 0 ? result.get(0) : Optional.empty();
     }
-
 
     /**
      * Run query that returns all Customers with matching id in ids.
@@ -196,45 +189,44 @@ class DataAccessReservationsImpl implements DataAccessReservations {
          * Map ids (23, 48, 96) to idsStr: "23, 48, 96"
          */
         String idsStr = StreamSupport.stream(ids.spliterator(), false)
-            .map(id -> String.valueOf(id))
-            .collect(Collectors.joining(", "));
+                .map(id -> String.valueOf(id))
+                .collect(Collectors.joining(", "));
         //
         var result = jdbcTemplate.queryForStream(
-            /*
-             * Prepare statement (ps) with "?"-augmented SQL query.
-             */
-            String.format("SELECT * FROM CUSTOMER WHERE ID IN (%s)", idsStr),
-
-            /*
-             * Extract values from ResultSet for each row.
-             */
-            (rs, rowNum) -> {
-                long id = rs.getInt("ID");
-                long customer_id = rs.getInt("CUSTOMER_ID");
-                long vehicle_id = rs.getInt("VEHICLE_ID");
-                String begin = rs.getString("BEGIN");
-                String end = rs.getString("END");
-                String pickup = rs.getString("PICKUP");
-                String dropoff = rs.getString("DROPOFF");
-                String status = rs.getString("STATUS");
                 /*
-                 * Create Optional<Customer> from values.
+                 * Prepare statement (ps) with "?"-augmented SQL query.
                  */
-                return dataFactory.createReservation(id, customer_id, vehicle_id, begin, end, pickup, dropoff, status);
-            }
-        )
-        /*
-         * Remove empty results from stream of Optional<Customer>,
-         * map remaining from Optional<Customer> to Customer and
-         * collect result.
-         */
-        .filter(opt -> opt.isPresent())
-        .map(opt -> opt.get())
-        .collect(Collectors.toList());
+                String.format("SELECT * FROM RESERVATION WHERE ID IN (%s)", idsStr),
+
+                /*
+                 * Extract values from ResultSet for each row.
+                 */
+                (rs, rowNum) -> {
+                    long id = rs.getInt("ID");
+                    long customer_id = rs.getInt("CUSTOMER_ID");
+                    long vehicle_id = rs.getInt("VEHICLE_ID");
+                    String begin = rs.getString("BEGIN");
+                    String end = rs.getString("END");
+                    String pickup = rs.getString("PICKUP");
+                    String dropoff = rs.getString("DROPOFF");
+                    String status = rs.getString("STATUS");
+                    /*
+                     * Create Optional<Customer> from values.
+                     */
+                    return dataFactory.createReservation(id, customer_id, vehicle_id, begin, end, pickup, dropoff,
+                            status);
+                })
+                /*
+                 * Remove empty results from stream of Optional<Customer>,
+                 * map remaining from Optional<Customer> to Customer and
+                 * collect result.
+                 */
+                .filter(opt -> opt.isPresent())
+                .map(opt -> opt.get())
+                .collect(Collectors.toList());
         //
         return result;
     }
-
 
     /**
      * Run query that returns all reservations held by a customer.
@@ -251,56 +243,54 @@ class DataAccessReservationsImpl implements DataAccessReservations {
     public Iterable<Reservation> findReservationsByCustomerId(long customer_id) {
         //
         return jdbcTemplate.queryForStream(
-            /*
-             * Prepare statement (ps) with "?"-augmented SQL query.
-             */
-            "SELECT RESERVATION.* FROM CUSTOMER " +
-            "JOIN RESERVATION ON RESERVATION.CUSTOMER_ID = CUSTOMER.ID " +
-            "WHERE CUSTOMER.ID = ?",
-
-            ps -> {
                 /*
-                 * Insert customer_id value of first occurence of "?" in SQL.
+                 * Prepare statement (ps) with "?"-augmented SQL query.
                  */
-                ps.setInt(1, (int)customer_id);
-            },
+                "SELECT RESERVATION.* FROM CUSTOMER " +
+                        "JOIN RESERVATION ON RESERVATION.CUSTOMER_ID = CUSTOMER.ID " +
+                        "WHERE CUSTOMER.ID = ?",
 
-            (rs, rowNum) -> {
+                ps -> {
+                    /*
+                     * Insert customer_id value of first occurence of "?" in SQL.
+                     */
+                    ps.setInt(1, (int) customer_id);
+                },
+
+                (rs, rowNum) -> {
+                    /*
+                     * Extract values from ResultSet.
+                     */
+                    long rid = rs.getInt("ID"); // RESERVATION.ID
+                    long vehicle_id = rs.getInt("VEHICLE_ID");
+                    String begin = rs.getString("BEGIN");
+                    String end = rs.getString("END");
+                    String pickup = rs.getString("PICKUP");
+                    String dropoff = rs.getString("DROPOFF");
+                    String status = rs.getString("STATUS");
+
+                    /*
+                     * Create Optional<Reservation> from values.
+                     */
+                    var opt = dataFactory.createReservation(
+                            rid, customer_id, vehicle_id, begin, end, pickup, dropoff, status);
+
+                    if (opt.isEmpty()) {
+                        // log warning if no valid Reservation object could be created
+                        // from database result set
+                        logger.warn(String.format("dropping reservation id: %d"));
+                    }
+                    return opt;
+                })
                 /*
-                 * Extract values from ResultSet.
-                 */
-                long rid = rs.getInt("ID");   // RESERVATION.ID
-                long vehicle_id = rs.getInt("VEHICLE_ID");
-                String begin = rs.getString("BEGIN");
-                String end = rs.getString("END");
-                String pickup = rs.getString("PICKUP");
-                String dropoff = rs.getString("DROPOFF");
-                String status = rs.getString("STATUS");
-
-                /*
-                 * Create Optional<Reservation> from values.
-                 */
-                var opt = dataFactory.createReservation(
-                    rid, customer_id, vehicle_id, begin, end, pickup, dropoff, status
-                );
-
-                if(opt.isEmpty()) {
-                    // log warning if no valid Reservation object could be created
-                    // from database result set
-                    logger.warn(String.format("dropping reservation id: %d"));
-                }
-                return opt;
-            })
-            /*
-            * Remove empty results from stream of Optional<Customer>,
-            * map remaining from Optional<Customer> to Customer and
-            * collect result.
-            */
-            .filter(opt -> opt.isPresent())
-            .map(opt -> opt.get())
-            .collect(Collectors.toList());
+                * Remove empty results from stream of Optional<Customer>,
+                * map remaining from Optional<Customer> to Customer and
+                * collect result.
+                */
+                .filter(opt -> opt.isPresent())
+                .map(opt -> opt.get())
+                .collect(Collectors.toList());
     }
-
 
     /**
      * Generic method to return number of elements in Iterable<T>.
@@ -311,9 +301,8 @@ class DataAccessReservationsImpl implements DataAccessReservations {
      */
     @Override
     public <T> long count(Iterable<T> iter) {
-        return iter instanceof Collection? ((Collection<?>) iter).size() : -1;
+        return iter instanceof Collection ? ((Collection<?>) iter).size() : -1;
     }
-
 
     /**
      * Attempt to INSERT new record into CUSTOMER table from attributes
@@ -335,72 +324,102 @@ class DataAccessReservationsImpl implements DataAccessReservations {
      * @throws DataAccessException with error code (400 bad request, 409 conflict).
      */
     @Override
-    public Customer createReservation(Map<String, Object> map) throws DataAccessException {
-        //
-        // placeholder for: ID, NAME, CONTACT, STATUS
-        final Object[] attrs = {null, null, null, null};
+    public Reservation createReservation(Map<String, Object> map) throws DataAccessException {
+        // placeholder for: id, customer_id, vehicle_id, begin, end, pickup, dropoff, status "
+        final Object[] attrs = { null, null, null, null, null, null, null, null };
         int id = -1;
-        //
+        int customer_id = -1;
+        int vehicle_id = -1;
         // extract attributes from map
-        for(String key : map.keySet()) {
-            //
-            switch(key.toUpperCase()) {
-                //
+        System.out.println("Map contents: " + map);
+
+        for (String key : map.keySet()) {
+            switch (key.toUpperCase()) {
                 case "ID":
                     final Integer ID = parseNumber(map.get(key));
-                    id = ID != null? ID.intValue() : -1;
-                    attrs[0] = id >= 0? ID : null;
+                    id = ID != null ? ID.intValue() : -1;
+                    attrs[0] = id >= 0 ? ID : null;
                     break;
-                //
-                case "NAME":    attrs[1] = (String)map.get(key); break;
-                case "CONTACT": attrs[2] = (String)map.get(key); break;
-                case "STATUS":  attrs[3] = (String)map.get(key); break;
+                case "CUSTOMERID":
+                    final Integer CUSTOMER_ID = parseNumber(map.get(key));
+                    customer_id = CUSTOMER_ID != null ? CUSTOMER_ID.intValue() : -1;
+                    attrs[1] = customer_id >= 0 ? CUSTOMER_ID : null;
+                    break;
+                case "VEHICLEID":
+                    final Integer VEHICLE_ID = parseNumber(map.get(key));
+                    vehicle_id = VEHICLE_ID != null ? VEHICLE_ID.intValue() : -1;
+                    attrs[2] = vehicle_id >= 0 ? VEHICLE_ID : null;
+                    break;
+                case "BEGIN":
+                    attrs[3] = (String) map.get(key);
+                    break;
+                case "END":
+                    attrs[4] = (String) map.get(key);
+                    break;
+                case "PICKUP":
+                    attrs[5] = (String) map.get(key);
+                    break;
+                case "DROPOFF":
+                    attrs[6] = (String) map.get(key);
+                    break;
+                case "STATUS":
+                    attrs[7] = (String) map.get(key);
+                    break;
             }
         }
         // probe all values have been set
-        for(var a : attrs) {
-            if(a==null)
+        for (var a : attrs) {
+            System.out.println("TEEEEEEEEST: " + a);
+        }
+        for (var a : attrs) {
+            if (a == null)
                 throw new DataAccessException.BadRequest("incomplete attributes");
         }
-        //
+
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        
+
         //
         try {
             //
             int created = jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection
-                    //
-                    .prepareStatement("INSERT INTO CUSTOMER (ID, NAME, CONTACT, STATUS) VALUES (?, ?, ?, ?);", Statement.RETURN_GENERATED_KEYS);
-                    //
-                    ps.setInt(1, ((Integer)attrs[0]).intValue());   // ID
-                    ps.setString(2, (String)attrs[1]);   // NAME
-                    ps.setString(3, (String)attrs[2]);   // CONTACT
-                    ps.setString(4, (String)attrs[3]);   // STATUS
-                    //
-                    return ps;
+                        //
+                        .prepareStatement(
+                                "INSERT INTO RESERVATION (ID, CUSTOMER_ID, VEHICLE_ID, BEGIN, END, PICKUP, DROPOFF, STATUS) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+                                Statement.RETURN_GENERATED_KEYS);
                 //
-                }, keyHolder);
+                ps.setInt(1, ((Integer) attrs[0]).intValue()); // ID
+                ps.setInt(2, ((Integer) attrs[1]).intValue()); // CUSTOMER_ID
+                ps.setInt(3, ((Integer) attrs[2]).intValue()); // VEHICLE_ID
+                ps.setString(4, (String) attrs[3]); // BEGIN
+                ps.setString(5, (String) attrs[4]); // END
+                ps.setString(6, (String) attrs[5]); // PICKUP
+                ps.setString(7, (String) attrs[6]); // DROPOFF
+                ps.setString(8, (String) attrs[7]); // STATUS
+                //
+                return ps;
+                //
+            }, keyHolder);
             //
             // id = (long)keyHolder.getKey();   // used to extract key generated by database
-            if(created != 1) {
+            if (created != 1) {
                 throw new DataAccessException.BadRequest(
-                    String.format("data recored not created for id: %d, %d records created", id, created)
-                );
+                        String.format("data recored not created for id: %d, %d records created", id, created));
             }
-        //
-        } catch(org.springframework.dao.DataAccessException dax) {
+            //
+        } catch (org.springframework.dao.DataAccessException dax) {
             // "org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback;
             // Duplicate entry '1114' for key 'customer.PRIMARY'"
-            throw new DataAccessException.Conflict("INSERT exception, id may exist: " + (int)attrs[0]);
+            throw new DataAccessException.Conflict("INSERT exception, id may exist: " + (int) attrs[0]);
         }
         //
-        return dataFactory.createCustomer(id, (String)attrs[1], (String)attrs[1], (String)attrs[3])
-            .map(c -> c)
-            .orElseThrow(() ->
-                new DataAccessException.Conflict("failed to create object for id: " + (int)attrs[0]));
+        return dataFactory
+                .createReservation(id, (Integer) attrs[1], (Integer) attrs[2], (String) attrs[3], (String) attrs[4],
+                        (String) attrs[5], (String) attrs[6], (String) attrs[7])
+                .map(c -> c)
+                .orElseThrow(
+                        () -> new DataAccessException.Conflict("failed to create object for id: " + (int) attrs[0]));
     }
-
 
     /**
      * Attempt to UPDATE existing record into CUSTOMER table from attributes
@@ -424,54 +443,81 @@ class DataAccessReservationsImpl implements DataAccessReservations {
         //
         String cols = "";
         int id = -1;
+        int customer_id = -1;
+        int vehicle_id = -1;
         //
         // extract attributes from map
-        for(String key : map.keySet()) {
+        for (String key : map.keySet()) {
             //
-            switch(key.toUpperCase()) {
-                //
+            switch (key.toUpperCase()) {
+                // ID, CUSTOMER_ID, VEHICLE_ID, BEGIN, END, PICKUP, DROPOFF, STATUS
                 case "ID":
                     final Integer ID = parseNumber(map.get(key));
-                    id = ID != null && ID >= 0? ID.intValue() : id;
-                    if(id >= 0) {
-                        cols += (cols.length() > 0? ", " : "") + "ID=\"" + map.get(key) + "\"";
+                    id = ID != null && ID >= 0 ? ID.intValue() : id;
+                    if (id >= 0) {
+                        cols += (cols.length() > 0 ? ", " : "") + "ID=\"" + map.get(key) + "\"";
                     }
                     break;
                 //
-                case "NAME":    cols += (cols.length() > 0? ", " : "") + "NAME=\"" + map.get(key) + "\""; break;
-                case "CONTACT": cols += (cols.length() > 0? ", " : "") + "CONTACT=\"" + map.get(key) + "\""; break;
-                case "STATUS":  cols += (cols.length() > 0? ", " : "") + "STATUS=\"" + map.get(key) + "\""; break;
+                case "CUSTOMERID":
+                    final Integer CUSTOMER_ID = parseNumber(map.get(key));
+                    customer_id = CUSTOMER_ID != null && CUSTOMER_ID >= 0 ? CUSTOMER_ID.intValue() : customer_id;
+                    if (customer_id >= 0) {
+                        cols += (cols.length() > 0 ? ", " : "") + "CUSTOMER_ID=\"" + map.get(key) + "\"";
+                    }
+                    break;
+                case "VEHICLEID":
+                    final Integer VEHICLE_ID = parseNumber(map.get(key));
+                    vehicle_id = VEHICLE_ID != null && VEHICLE_ID >= 0 ? VEHICLE_ID.intValue() : vehicle_id;
+                    if (vehicle_id >= 0) {
+                        cols += (cols.length() > 0 ? ", " : "") + "VEHICLE_ID=\"" + map.get(key) + "\"";
+                    }
+                    break;
+                case "BEGIN":
+                    cols += (cols.length() > 0 ? ", " : "") + "BEGIN=\"" + map.get(key) + "\"";
+                    break;
+                case "END":
+                    cols += (cols.length() > 0 ? ", " : "") + "END=\"" + map.get(key) + "\"";
+                    break;
+                //
+                case "PICKUP":
+                    cols += (cols.length() > 0 ? ", " : "") + "PICKUP=\"" + map.get(key) + "\"";
+                    break;
+                case "DROPOFF":
+                    cols += (cols.length() > 0 ? ", " : "") + "DROPOFF=\"" + map.get(key) + "\"";
+                    break;
+                case "STATUS":
+                    cols += (cols.length() > 0 ? ", " : "") + "STATUS=\"" + map.get(key) + "\"";
+                    break;
             }
         }
         // probe all values have been set
-        if(cols.length() > 0 && id >= 0) {
+        if (cols.length() > 0 && id >= 0) {
             try {
                 //
                 final String fcols = cols;
                 final int fid = id;
                 int updated = jdbcTemplate.update(connection -> {
                     PreparedStatement ps = connection
-                        .prepareStatement("UPDATE CUSTOMER SET " + fcols + " WHERE ID = ?;");
+                            .prepareStatement("UPDATE RESERVATION SET " + fcols + " WHERE ID = ?;");
                     ps.setInt(1, fid);
                     return ps;
                 });
                 //
-                if(updated != 1) {
+                if (updated != 1) {
                     throw new DataAccessException.NotFound(
-                        String.format("id not found: %d, %d records updated", id, updated)
-                    );
+                            String.format("id not found: %d, %d records updated", id, updated));
                 }
-            //
-            } catch(org.springframework.dao.DataAccessException dax) {
+                //
+            } catch (org.springframework.dao.DataAccessException dax) {
                 throw new DataAccessException.BadRequest(dax.getMessage());
             }
-        //
+            //
         } else {
             throw new DataAccessException.BadRequest("incomplete attributes");
         }
         return true;
     }
-
 
     /**
      * Delete Customer record with id from CUSTOMER table. An exception is
@@ -485,31 +531,29 @@ class DataAccessReservationsImpl implements DataAccessReservations {
     @Override
     public boolean deleteReservation(long id) throws DataAccessException {
         //
-        if(id < 0)
+        if (id < 0)
             throw new DataAccessException.BadRequest("invalid id: " + id);
         //
         try {
             //
             int deleted = jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection
-                    .prepareStatement("DELETE FROM CUSTOMER WHERE ID = ?;");
-                ps.setInt(1, (int)id);
+                        .prepareStatement("DELETE FROM RESERVATION WHERE ID = ?;");
+                ps.setInt(1, (int) id);
                 return ps;
             });
             //
-            if(deleted != 1) {
+            if (deleted != 1) {
                 throw new DataAccessException.NotFound(
-                    String.format("id not found: %d, %d records deleted", id, deleted)
-                );
+                        String.format("id not found: %d, %d records deleted", id, deleted));
             }
-        //
-        } catch(org.springframework.dao.DataAccessException dax) {
+            //
+        } catch (org.springframework.dao.DataAccessException dax) {
             throw new DataAccessException.Conflict("conflict deleting item id: " +
-                        id + ", foreign key dependency may exist");
+                    id + ", foreign key dependency may exist");
         }
         return true;
     }
-
 
     /**
      * Attempt to parse an Integer value from an object.
@@ -519,18 +563,17 @@ class DataAccessReservationsImpl implements DataAccessReservations {
      */
     private Integer parseNumber(Object obj) {
         Integer number = null;
-        if(obj != null) {
-            if(obj instanceof Integer)
-            number = (Integer)obj;
-            else if(obj instanceof String)
+        if (obj != null) {
+            if (obj instanceof Integer)
+                number = (Integer) obj;
+            else if (obj instanceof String)
                 try {
-                    number = Integer.parseInt((String)obj);
-                } catch(NumberFormatException ex) { };
-            }
+                    number = Integer.parseInt((String) obj);
+                } catch (NumberFormatException ex) {
+                }
+            ;
+        }
         return number;
     }
-
-
-
 
 }

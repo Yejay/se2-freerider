@@ -3,7 +3,6 @@ package de.freerider.data_jdbc;
 import java.util.Map;
 import java.util.Optional;
 
-import de.freerider.datamodel.Customer;
 import de.freerider.datamodel.Reservation;
 
 
@@ -103,7 +102,7 @@ public interface DataAccessReservations {
      * @return created Customer object.
      * @throws DataAccessException with error code (400 bad request, 409 conflict).
      */
-    Customer createReservation(Map<String, Object> map) throws DataAccessException;
+    Reservation createReservation(Map<String, Object> map) throws DataAccessException;
 
 
     /**
